@@ -3,18 +3,18 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 
+import routes from "./routes";
+
 const app = express();
 
-app.use(cors());
-app.use(helmet());
-app.use(morgan("dev"));
 app.use(express.json());
 
-app.get("/", (req, res) => {
-  res.json({
-    success: true,
-    message: "Team Task Tracker API Running",
-  });
-});
+app.use(cors());
+
+app.use(helmet());
+
+app.use(morgan("dev"));
+
+app.use("/api", routes);
 
 export default app;

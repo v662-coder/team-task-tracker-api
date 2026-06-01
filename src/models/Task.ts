@@ -1,6 +1,35 @@
 import mongoose from "mongoose";
 
-const taskSchema = new mongoose.Schema(
+export enum TaskPriority {
+  LOW = "LOW",
+  MEDIUM = "MEDIUM",
+  HIGH = "HIGH",
+}
+
+export enum TaskStatus {
+  TODO = "TODO",
+  IN_PROGRESS = "IN_PROGRESS",
+  IN_REVIEW = "IN_REVIEW",
+  DONE = "DONE",
+  BLOCKED = "BLOCKED",
+}
+
+export interface ITask extends mongoose.Document {
+  title: string;
+  description?: string;
+
+  priority: TaskPriority;
+  status: TaskStatus;
+
+  assigneeId?: mongoose.Types.ObjectId;
+
+  organizationId: mongoose.Types.ObjectId;
+
+  dueDate?: Date;
+  completedAt?: Date;
+}
+
+const taskSchema = new mongoose.Schema<ITask>(
   {
     title: {
       type: String,
@@ -11,23 +40,17 @@ const taskSchema = new mongoose.Schema(
 
     priority: {
       type: String,
-      enum: ["LOW", "MEDIUM", "HIGH"],
-      default: "MEDIUM",
+      enum: Object.values(TaskPriority),
+      default: TaskPriority.MEDIUM,
     },
 
     status: {
       type: String,
-      enum: [
-        "TODO",
-        "IN_PROGRESS",
-        "IN_REVIEW",
-        "DONE",
-        "BLOCKED",
-      ],
-      default: "TODO",
+      enum: Object.values(TaskStatus),
+      default: TaskStatus.TODO,
     },
 
-    assignee: {
+    assigneeId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
     },
@@ -48,10 +71,10 @@ const taskSchema = new mongoose.Schema(
 );
 
 taskSchema.index({ status: 1 });
-taskSchema.index({ assignee: 1 });
+taskSchema.index({ assigneeId: 1 });
 taskSchema.index({ dueDate: 1 });
 
-export default mongoose.model(
+export default mongoose.model<ITask>(
   "Task",
   taskSchema
 );

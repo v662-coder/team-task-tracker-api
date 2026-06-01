@@ -6,7 +6,16 @@ export enum UserRole {
   MEMBER = "MEMBER",
 }
 
-const userSchema = new mongoose.Schema(
+export interface IUser extends mongoose.Document {
+  name: string;
+  email: string;
+  password: string;
+  role: UserRole;
+  organizationId: mongoose.Types.ObjectId;
+  refreshToken?: string | null;
+}
+
+const userSchema = new mongoose.Schema<IUser>(
   {
     name: {
       type: String,
@@ -36,11 +45,17 @@ const userSchema = new mongoose.Schema(
       required: true,
     },
 
-    refreshToken: String,
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-export default mongoose.model("User", userSchema);
+export default mongoose.model<IUser>(
+  "User",
+  userSchema
+);
