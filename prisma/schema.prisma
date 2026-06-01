@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  MANAGER
+  MEMBER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  IN_REVIEW
+  DONE
+  BLOCKED
+}
+
+model Organization {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+
+  users     User[]
+  tasks     Task[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model User {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name            String
+  email           String @unique
+  password        String
+
+  role            Role @default(MEMBER)
+
+  organizationId  String @db.ObjectId
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  assignedTasks   Task[] @relation("TaskAssignee")
+
+  refreshToken    String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Task {
+  id              String @id @default(auto()) @map("_id") @db.ObjectId
+
+  title           String
+  description     String?
+
+  priority        Priority @default(MEDIUM)
+
+  status          TaskStatus @default(TODO)
+
+  assigneeId      String? @db.ObjectId
+  assignee        User? @relation("TaskAssignee", fields: [assigneeId], references: [id])
+
+  organizationId  String @db.ObjectId
+  organization    Organization @relation(fields: [organizationId], references: [id])
+
+  dueDate         DateTime?
+
+  completedAt     DateTime?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
